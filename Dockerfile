@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -18,8 +18,7 @@ RUN apt-get update && \
 
 WORKDIR /tmp
 
-RUN git config --global http.sslVerify true && \
-    git clone --depth 1 https://github.com/gymreklab/GangSTR.git && \
+RUN git clone --depth 1 https://github.com/gymreklab/GangSTR.git && \
     cd GangSTR && \
     mkdir build && \
     cd build && \
