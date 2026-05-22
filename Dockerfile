@@ -7,14 +7,19 @@ RUN apt-get update && \
         build-essential \
         cmake \
         git \
+        wget \
+        ca-certificates \
         zlib1g-dev \
         libbz2-dev \
         liblzma-dev && \
+    update-ca-certificates && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /tmp
 
-RUN git clone --depth 1 https://github.com/gymreklab/GangSTR.git && \
+RUN git config --global http.sslVerify true && \
+    git clone --depth 1 https://github.com/gymreklab/GangSTR.git && \
     cd GangSTR && \
     mkdir build && \
     cd build && \
@@ -24,4 +29,4 @@ RUN git clone --depth 1 https://github.com/gymreklab/GangSTR.git && \
     cd / && \
     rm -rf /tmp/GangSTR
 
-CMD ["GangSTR", "--help"]
+ENTRYPOINT ["GangSTR"]
