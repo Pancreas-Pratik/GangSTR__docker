@@ -1,44 +1,24 @@
-FROM ubuntu:22.04
+FROM condaforge/miniforge3:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        git \
-        build-essential \
-        cmake \
-        make \
-        wget \
-        curl \
-        ca-certificates \
-        zlib1g-dev \
-        libbz2-dev \
-        liblzma-dev \
-        libcurl4-openssl-dev \
-        libssl-dev \
-        libncurses5-dev \
-        libncursesw5-dev \
-        autoconf \
-        automake \
-        autotools-dev \
-        libtool \
-        pkg-config && \
-    rm -rf /var/lib/apt/lists/*
+# Install GangSTR from Bioconda.
+# Important:
+#   - conda-forge must be available because Bioconda depends on it
+#   - strict channel priority helps avoid mixed/incompatible dependency solves
+RUN conda config --system --set channel_priority strict && \
+    conda config --system --remove-key channels || true && \
+    conda config --system --add channels defaults && \
+    conda config --system --add channels bioconda && \
+    conda config --system --add channels conda-forge && \
+    conda install -y gangstr=2.5.0 && \
+    conda clean -afy
 
-WORKDIR /tmp
-
-RUN git clone --depth 1 https://github.com/gymreklab/GangSTR.git && \
-    cd GangSTR && \
-    sed -i 's|UPDATE_COMMAND autoreconf ${CMAKE_BINARY_DIR}/thirdparty/htslib/src/htslib|UPDATE_COMMAND autoreconf --install ${CMAKE_BINARY_DIR}/thirdparty/htslib/src/htslib|' CMakeLists.txt && \
-    grep -n "UPDATE_COMMAND autoreconf" CMakeLists.txt && \
-    mkdir build && \
-    cd build && \
-    cmake .. && \
-    make -j1 && \
-    cmake --install . && \
-    cd / && \
-    rm -rf /tmp/GangSTR
+# Confirm install during Docker build
+RUN GangSTR --version
 
 WORKDIR /data
 
-CMD ["GangSTR", "--help"]
+ENTRYPOINT ["GangSTR"]
+CMD ["--help"]
